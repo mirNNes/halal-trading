@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build backend image
+        run: docker build -t halal-trading-api ./halal-trading/backend
+
+      - name: Build frontend image
+        run: docker build -t halal-trading-frontend ./halal-trading/frontend
+
+      - name: Validate production compose
+        run: docker compose -f halal-trading/docker-compose.prod.yml config

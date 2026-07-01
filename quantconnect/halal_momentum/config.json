@@ -1,0 +1,14 @@
+{
+  "algorithm-type-name": "HalalMomentumStrategy",
+  "algorithm-language": "Python",
+  "parameters": {
+    "start-date": "2020-01-01",
+    "end-date": "2024-01-01",
+    "cash": "100000",
+    "top-n": "20",
+    "backend-url": "https://your-app.com",
+    "webhook-url": "https://your-app.com/api/webhooks/quantconnect",
+    "webhook-secret": "change-me",
+    "strategy-id": "1"
+  }
+}
