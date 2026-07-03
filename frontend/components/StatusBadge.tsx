@@ -18,7 +18,11 @@ const styles: Record<string, string> = {
   active: "bg-green-100 text-green-700",
   connected: "bg-green-100 text-green-700",
   disconnected: "bg-red-100 text-red-700",
-  
+
+  halal: "bg-green-100 text-green-700",
+  haram: "bg-red-100 text-red-700",
+  doubtful: "bg-yellow-100 text-yellow-700",
+  blocked: "bg-orange-100 text-orange-700",
 }
 
 export function StatusBadge({ status }: { status: string }) {

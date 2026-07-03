@@ -11,24 +11,33 @@ export default function DashboardPage() {
   const [account, setAccount] = useState<any | null>(null)
   const [positions, setPositions] = useState<any | null>(null)
   const [strategies, setStrategies] = useState<any[]>([])
+  const [signals, setSignals] = useState<any[]>([])
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [loading, setLoading] = useState(true)
 
   async function load() {
-    const [brokerData, orderData, accountData, positionData, strategyData] =
-      await Promise.all([
-        api.brokers.list().catch(() => []),
-        api.executions.list().catch(() => []),
-        api.brokers.account().catch(() => null),
-        api.brokers.positions().catch(() => null),
-        api.strategies.list().catch(() => []),
-      ])
+    const [
+      brokerData,
+      orderData,
+      accountData,
+      positionData,
+      strategyData,
+      signalData,
+    ] = await Promise.all([
+      api.brokers.list().catch(() => []),
+      api.executions.list().catch(() => []),
+      api.brokers.account().catch(() => null),
+      api.brokers.positions().catch(() => null),
+      api.strategies.list().catch(() => []),
+      api.signals.list().catch(() => []),
+    ])
 
     setBrokers(brokerData)
     setOrders(orderData)
     setAccount(accountData)
     setPositions(positionData)
     setStrategies(strategyData)
+    setSignals(signalData)
     setLastUpdated(new Date())
     setLoading(false)
   }
@@ -45,6 +54,7 @@ export default function DashboardPage() {
 
   const activeBroker = brokers.find((b) => b.is_active)
   const recentOrders = orders.slice(0, 5)
+  const latestSignal = signals[0]
   const accountInfo = account?.account
 
   const positionItems = positions?.positions
@@ -90,9 +100,7 @@ export default function DashboardPage() {
         <div className="card">
           <p className="text-sm text-gray-500">Cash</p>
           <p className="text-xl font-semibold mt-1">
-            {accountInfo
-              ? `$${Number(accountInfo.cash).toLocaleString()}`
-              : "-"}
+            {accountInfo ? `$${Number(accountInfo.cash).toLocaleString()}` : "-"}
           </p>
         </div>
 
@@ -114,8 +122,8 @@ export default function DashboardPage() {
                 accountInfo
                   ? accountInfo.status.toLowerCase()
                   : activeBroker
-                  ? "connected"
-                  : "disconnected"
+                    ? "connected"
+                    : "disconnected"
               }
             />
           </div>
@@ -135,67 +143,69 @@ export default function DashboardPage() {
 
         <div className="card">
           <p className="text-sm text-gray-500">Open Positions</p>
-          <p className="text-xl font-semibold mt-1">
-            {openPositionsCount}
-          </p>
+          <p className="text-xl font-semibold mt-1">{openPositionsCount}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Link
-          href="/backtests"
-          className="card hover:border-blue-300 transition-colors"
-        >
+        <Link href="/backtests" className="card hover:border-blue-300 transition-colors">
           <h2 className="font-semibold text-lg">Backtests</h2>
           <p className="text-sm text-gray-500 mt-1">
             Run and review historical strategy performance
           </p>
         </Link>
 
-        <Link
-          href="/signals"
-          className="card hover:border-blue-300 transition-colors"
-        >
+        <Link href="/signals" className="card hover:border-blue-300 transition-colors">
           <h2 className="font-semibold text-lg">Live Signals</h2>
           <p className="text-sm text-gray-500 mt-1">
             Real-time trade signals from active strategies
           </p>
         </Link>
 
-        <Link
-          href="/brokers"
-          className="card hover:border-blue-300 transition-colors"
-        >
-          <h2 className="font-semibold text-lg">
-            Broker Connections
-          </h2>
+        <Link href="/brokers" className="card hover:border-blue-300 transition-colors">
+          <h2 className="font-semibold text-lg">Broker Connections</h2>
           <p className="text-sm text-gray-500 mt-1">
             Manage Alpaca connection and auto-execution
           </p>
         </Link>
 
-        <Link
-          href="/executions"
-          className="card hover:border-blue-300 transition-colors"
-        >
-          <h2 className="font-semibold text-lg">
-            Execution History
-          </h2>
+        <Link href="/executions" className="card hover:border-blue-300 transition-colors">
+          <h2 className="font-semibold text-lg">Execution History</h2>
           <p className="text-sm text-gray-500 mt-1">
             Review orders sent to your broker
           </p>
         </Link>
+
+        <Link href="/compliance" className="card hover:border-blue-300 transition-colors">
+          <h2 className="font-semibold text-lg">Compliance Center</h2>
+          <p className="text-sm text-gray-500 mt-1">
+            Check tickers and scan portfolios for halal compliance
+          </p>
+        </Link>
+
+        <div className="card">
+          <h2 className="font-semibold text-lg">Latest Signal</h2>
+
+          {latestSignal ? (
+            <div className="mt-2">
+              <p className="font-medium">
+                {latestSignal.action} {latestSignal.ticker}
+              </p>
+              <p className="text-sm text-gray-500">
+                {latestSignal.strategy_name}
+              </p>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-400 mt-2">No signals yet.</p>
+          )}
+        </div>
       </div>
 
       <div className="card">
-        <h2 className="font-semibold text-lg mb-4">
-          Open Positions
-        </h2>
+        <h2 className="font-semibold text-lg mb-4">Open Positions</h2>
 
         {!positionItems.length ? (
-          <p className="text-sm text-gray-400">
-            No open positions.
-          </p>
+          <p className="text-sm text-gray-400">No open positions.</p>
         ) : (
           <div className="space-y-3">
             {positionItems.map(([ticker, marketValue]) => (
@@ -205,9 +215,7 @@ export default function DashboardPage() {
               >
                 <div>
                   <p className="font-medium">{ticker}</p>
-                  <p className="text-xs text-gray-500">
-                    Market value
-                  </p>
+                  <p className="text-xs text-gray-500">Market value</p>
                 </div>
 
                 <p className="font-medium">
@@ -221,22 +229,15 @@ export default function DashboardPage() {
 
       <div className="card">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-semibold text-lg">
-            Recent Orders
-          </h2>
+          <h2 className="font-semibold text-lg">Recent Orders</h2>
 
-          <Link
-            href="/executions"
-            className="text-sm text-blue-600 hover:underline"
-          >
+          <Link href="/executions" className="text-sm text-blue-600 hover:underline">
             View all
           </Link>
         </div>
 
         {!recentOrders.length ? (
-          <p className="text-sm text-gray-400">
-            No orders yet.
-          </p>
+          <p className="text-sm text-gray-400">No orders yet.</p>
         ) : (
           <div className="space-y-3">
             {recentOrders.map((order) => (
@@ -255,19 +256,19 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="text-right">
-                <p className="font-medium">
-                  {order.notional_usd
-                    ? Number(order.notional_usd).toLocaleString("en-US", {
-                        style: "currency",
-                        currency: "USD",
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })
-                    : "-"}
-                </p>
+                  <p className="font-medium">
+                    {order.notional_usd
+                      ? Number(order.notional_usd).toLocaleString("en-US", {
+                          style: "currency",
+                          currency: "USD",
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })
+                      : "-"}
+                  </p>
 
-                <StatusBadge status={order.status} />
-              </div>
+                  <StatusBadge status={order.status} />
+                </div>
               </div>
             ))}
           </div>

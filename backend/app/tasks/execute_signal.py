@@ -9,6 +9,7 @@ from celery_worker import celery
 from sqlalchemy import select
 
 from app.brokers.factory import get_broker_client
+from app.compliance.zoya import get_provider
 from app.core.database import AsyncSessionLocal
 from app.models.models import BrokerConnection, ExecutionOrder, Signal
 
@@ -49,6 +50,12 @@ async def _execute_signal(signal_id: int):
             await _place_signal_order(db, conn, signal)
 
 
+async def _check_order_compliance(ticker: str):
+    provider = get_provider()
+    result = await provider.get_batch_status([ticker])
+    return result[0]
+
+
 async def _place_signal_order(db, conn: BrokerConnection, signal: Signal):
     client = get_broker_client(
         conn.broker,
@@ -59,14 +66,38 @@ async def _place_signal_order(db, conn: BrokerConnection, signal: Signal):
 
     try:
         if signal.action == "BUY":
+            compliance = await _check_order_compliance(signal.ticker)
+
+            if compliance.status != "halal":
+                order = ExecutionOrder(
+                    user_id=conn.user_id,
+                    signal_id=signal.id,
+                    broker=conn.broker,
+                    ticker=signal.ticker,
+                    action=signal.action,
+                    notional_usd=float(conn.allocation_usd) * 0.10,
+                    status="blocked",
+                    error_message=(
+                        f"Compliance blocked: {compliance.status}. "
+                        f"{compliance.reason or ''}"
+                    )[:500],
+                    submitted_at=datetime.utcnow(),
+                )
+
+                db.add(order)
+                await db.commit()
+                return
+
             notional = float(conn.allocation_usd) * 0.10
             result = await client.place_fractional_order(
                 signal.ticker,
                 "buy",
                 notional,
             )
+
         elif signal.action == "SELL":
             result = await client.liquidate_position(signal.ticker)
+
         else:
             return
 
@@ -109,12 +140,6 @@ async def _place_signal_order(db, conn: BrokerConnection, signal: Signal):
 
 
 async def _execute_rebalance(strategy_id: int, weights: dict, timestamp: str):
-    """
-    For each user in "rebalance" mode:
-    1. Fetch their current Alpaca positions
-    2. Calculate target positions based on their allocation_usd * weight
-    3. Sell positions not in target, buy/adjust positions that are
-    """
     async with AsyncSessionLocal() as db:
         result = await db.execute(
             select(BrokerConnection).where(

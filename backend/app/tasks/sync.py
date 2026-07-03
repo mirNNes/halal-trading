@@ -1,4 +1,5 @@
 import asyncio
+import json
 from datetime import date
 from celery_worker import celery
 from app.compliance import get_provider
@@ -35,7 +36,7 @@ async def _sync():
                 "ticker": s.ticker,
                 "provider": provider.name,
                 "status": s.status,
-                "raw": s.raw,
+                "raw": json.dumps(s.raw),
             })
 
         # Rebuild today's halal universe

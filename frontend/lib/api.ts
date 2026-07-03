@@ -1,6 +1,6 @@
 import { Strategy } from "@/types/strategy"
 import { TradingSignal } from "@/types/signal"
-const BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+const BASE = process.env.NEXT_PUBLIC_API_URL || ""
 
 function getToken(): string | null {
   if (typeof window === "undefined") return null
@@ -101,6 +101,17 @@ export const api = {
   signals: {
     list: (strategyId?: number) =>
       apiFetch<TradingSignal[]>(`/api/signals${strategyId ? `?strategy_id=${strategyId}` : ""}`),
+  },
+
+  compliance: {
+    check: (ticker: string) =>
+      apiFetch<any>(`/api/universe/check?ticker=${encodeURIComponent(ticker)}`),
+
+    checkBatch: (tickers: string[]) =>
+      apiFetch<any[]>("/api/universe/check", {
+        method: "POST",
+        body: JSON.stringify({ tickers }),
+      }),
   },
 
     executions: {
