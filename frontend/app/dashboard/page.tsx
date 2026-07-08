@@ -62,14 +62,10 @@ export default function DashboardPage() {
     : []
 
   const activeStrategies = strategies.filter((s) => s.is_active).length
-
-  const today = new Date().toDateString()
-
-  const ordersToday = orders.filter((order) => {
-    return new Date(order.submitted_at).toDateString() === today
-  }).length
-
   const openPositionsCount = positionItems.length
+
+  const brokerName = activeBroker?.broker || "Alpaca"
+  const brokerMode = activeBroker?.paper ? "Paper Trading" : "Live Trading"
 
   if (loading) {
     return <div className="p-6 text-gray-400">Loading...</div>
@@ -78,7 +74,10 @@ export default function DashboardPage() {
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Dashboard</h1>
+        <div>
+          <p className="text-sm text-gray-500">Welcome back</p>
+          <h1 className="text-2xl font-semibold">Halal Trading Dashboard</h1>
+        </div>
 
         {lastUpdated && (
           <p className="text-sm text-gray-500">
@@ -87,36 +86,92 @@ export default function DashboardPage() {
         )}
       </div>
 
+      <div className="card bg-gradient-to-r from-emerald-600 to-emerald-700 text-white">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div>
+            <h2 className="text-2xl font-bold">Halal Trading Platform</h2>
+
+            <p className="mt-2 text-emerald-100">
+              Broker connected and compliance engine active.
+            </p>
+
+            <div className="flex gap-6 mt-4 text-sm">
+              <div>
+                <p className="text-emerald-100">Broker</p>
+                <p className="font-semibold">
+                  {activeBroker ? `${brokerName} ${brokerMode}` : "Not connected"}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-emerald-100">Compliance</p>
+                <p className="font-semibold">Active</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-3 flex-wrap">
+            <Link
+              href="/market-data"
+              className="bg-white text-emerald-700 px-4 py-2 rounded font-medium hover:bg-gray-100"
+            >
+              Market Data
+            </Link>
+
+            <Link
+              href="/signals"
+              className="border border-white px-4 py-2 rounded hover:bg-white/10"
+            >
+              Signals
+            </Link>
+
+            <Link
+              href="/compliance"
+              className="border border-white px-4 py-2 rounded hover:bg-white/10"
+            >
+              Compliance
+            </Link>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="card">
           <p className="text-sm text-gray-500">Portfolio Value</p>
           <p className="text-xl font-semibold mt-1">
             {accountInfo
               ? `$${Number(accountInfo.portfolio_value).toLocaleString()}`
-              : "-"}
+              : "No account data"}
           </p>
         </div>
 
         <div className="card">
           <p className="text-sm text-gray-500">Cash</p>
           <p className="text-xl font-semibold mt-1">
-            {accountInfo ? `$${Number(accountInfo.cash).toLocaleString()}` : "-"}
+            {accountInfo ? `$${Number(accountInfo.cash).toLocaleString()}` : "No account data"}
           </p>
         </div>
 
         <div className="card">
-          <p className="text-sm text-gray-500">Buying Power</p>
-          <p className="text-xl font-semibold mt-1">
-            {accountInfo
-              ? `$${Number(accountInfo.buying_power).toLocaleString()}`
-              : "-"}
-          </p>
+          <p className="text-sm text-gray-500">Open Positions</p>
+          <p className="text-xl font-semibold mt-1">{openPositionsCount}</p>
         </div>
 
         <div className="card">
-          <p className="text-sm text-gray-500">Broker Status</p>
+          <p className="text-sm text-gray-500">Active Strategies</p>
+          <p className="text-xl font-semibold mt-1">{activeStrategies}</p>
+        </div>
+      </div>
 
-          <div className="mt-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="card">
+          <h2 className="font-semibold text-lg">Broker</h2>
+
+          <div className="mt-3 space-y-2">
+            <p className="text-sm text-gray-500">
+              {activeBroker ? `${brokerName} ${brokerMode}` : "No broker connected"}
+            </p>
+
             <StatusBadge
               status={
                 accountInfo
@@ -128,66 +183,12 @@ export default function DashboardPage() {
             />
           </div>
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="card">
-          <p className="text-sm text-gray-500">Active Strategies</p>
-          <p className="text-xl font-semibold mt-1">{activeStrategies}</p>
-        </div>
-
-        <div className="card">
-          <p className="text-sm text-gray-500">Orders Today</p>
-          <p className="text-xl font-semibold mt-1">{ordersToday}</p>
-        </div>
-
-        <div className="card">
-          <p className="text-sm text-gray-500">Open Positions</p>
-          <p className="text-xl font-semibold mt-1">{openPositionsCount}</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Link href="/backtests" className="card hover:border-blue-300 transition-colors">
-          <h2 className="font-semibold text-lg">Backtests</h2>
-          <p className="text-sm text-gray-500 mt-1">
-            Run and review historical strategy performance
-          </p>
-        </Link>
-
-        <Link href="/signals" className="card hover:border-blue-300 transition-colors">
-          <h2 className="font-semibold text-lg">Live Signals</h2>
-          <p className="text-sm text-gray-500 mt-1">
-            Real-time trade signals from active strategies
-          </p>
-        </Link>
-
-        <Link href="/brokers" className="card hover:border-blue-300 transition-colors">
-          <h2 className="font-semibold text-lg">Broker Connections</h2>
-          <p className="text-sm text-gray-500 mt-1">
-            Manage Alpaca connection and auto-execution
-          </p>
-        </Link>
-
-        <Link href="/executions" className="card hover:border-blue-300 transition-colors">
-          <h2 className="font-semibold text-lg">Execution History</h2>
-          <p className="text-sm text-gray-500 mt-1">
-            Review orders sent to your broker
-          </p>
-        </Link>
-
-        <Link href="/compliance" className="card hover:border-blue-300 transition-colors">
-          <h2 className="font-semibold text-lg">Compliance Center</h2>
-          <p className="text-sm text-gray-500 mt-1">
-            Check tickers and scan portfolios for halal compliance
-          </p>
-        </Link>
 
         <div className="card">
           <h2 className="font-semibold text-lg">Latest Signal</h2>
 
           {latestSignal ? (
-            <div className="mt-2">
+            <div className="mt-3">
               <p className="font-medium">
                 {latestSignal.action} {latestSignal.ticker}
               </p>
@@ -196,7 +197,7 @@ export default function DashboardPage() {
               </p>
             </div>
           ) : (
-            <p className="text-sm text-gray-400 mt-2">No signals yet.</p>
+            <p className="text-sm text-gray-400 mt-3">No signals yet.</p>
           )}
         </div>
       </div>

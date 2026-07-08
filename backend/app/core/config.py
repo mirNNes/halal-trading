@@ -13,6 +13,11 @@ class Settings(BaseSettings):
 
     COMPLIANCE_PROVIDER: str = "mock"  # "mock" | "zoya"
     ZOYA_API_KEY: str = ""
+    
+    MARKET_DATA_PROVIDER: str = "alpaca"
+    ALPACA_API_KEY: str = ""
+    ALPACA_API_SECRET: str = ""
+    ALPACA_DATA_BASE_URL: str = "https://data.alpaca.markets"
 
     CORS_ORIGINS: list[str] = ["http://localhost:3000"]
 

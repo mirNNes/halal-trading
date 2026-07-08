@@ -17,6 +17,7 @@ export function Nav() {
                 <Link href="/dashboard" className="text-gray-600 hover:text-gray-900">Dashboard</Link>
                 <Link href="/backtests" className="text-gray-600 hover:text-gray-900">Backtests</Link>
                 <Link href="/signals" className="text-gray-600 hover:text-gray-900">Signals</Link>
+                <Link href="/market-data" className="text-gray-600 hover:text-gray-900">Market Data</Link>
                 <Link href="/billing" className="text-gray-600 hover:text-gray-900">Billing</Link>
                 <button onClick={logout} className="text-gray-400 hover:text-gray-600">Sign out</button>
               </>

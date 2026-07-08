@@ -103,6 +103,29 @@ export const api = {
       apiFetch<TradingSignal[]>(`/api/signals${strategyId ? `?strategy_id=${strategyId}` : ""}`),
   },
 
+    marketData: {
+    get: (ticker: string) =>
+      apiFetch<{
+        ticker: string
+        latest: {
+          time: string
+          open: number
+          high: number
+          low: number
+          close: number
+          volume: number
+        } | null
+        history: {
+          time: string
+          open: number
+          high: number
+          low: number
+          close: number
+          volume: number
+        }[]
+      }>(`/api/market-data/${encodeURIComponent(ticker)}`),
+  },
+
   compliance: {
     check: (ticker: string) =>
       apiFetch<any>(`/api/universe/check?ticker=${encodeURIComponent(ticker)}`),
