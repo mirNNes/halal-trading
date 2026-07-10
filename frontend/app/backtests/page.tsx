@@ -1,19 +1,22 @@
 import Link from "next/link"
 import { BacktestTable } from "@/components/BacktestTable"
 
-async function getBacktests() {
-  // In production this would use cookies/session for SSR auth
-  // For now returns empty — client-side fetch via BacktestTable
-  return []
-}
-
 export default function BacktestsPage() {
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold">Backtests</h1>
-        <Link href="/backtests/new" className="btn-primary">Run Backtest</Link>
+    <div className="mx-auto max-w-6xl space-y-6 p-6">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">Backtests</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Run historical simulations and review strategy performance.
+          </p>
+        </div>
+
+        <Link href="/backtests/new" className="btn-primary">
+          Run Backtest
+        </Link>
       </div>
+
       <BacktestTable />
     </div>
   )

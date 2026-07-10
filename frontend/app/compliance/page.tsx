@@ -12,14 +12,17 @@ export default function CompliancePage() {
   const [error, setError] = useState("")
 
   async function checkTicker() {
-    if (!ticker.trim()) return
+    const symbol = ticker.trim().toUpperCase()
 
+    if (!symbol) return
+
+    setTicker(symbol)
     setLoading(true)
     setError("")
     setResult(null)
 
     try {
-      const data = await api.compliance.check(ticker.trim().toUpperCase())
+      const data = await api.compliance.check(symbol)
       setResult(data)
     } catch (err: any) {
       setError(err.message || "Could not check compliance")
@@ -28,76 +31,110 @@ export default function CompliancePage() {
     }
   }
 
+  const score =
+    result?.score !== null && result?.score !== undefined
+      ? `${Math.round(Number(result.score) * 100)}%`
+      : "-"
+
   return (
-    <div className="p-6 max-w-3xl mx-auto space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6 p-6">
       <div>
         <h1 className="text-2xl font-semibold">Compliance Center</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Check whether a ticker passes the current halal compliance rules.
+        <p className="mt-1 text-sm text-gray-500">
+          Check individual tickers and scan portfolios against the current
+          halal compliance rules.
         </p>
       </div>
 
-      <div className="card space-y-4">
+      <div className="card space-y-5">
         <div>
-          <label className="block text-sm font-medium mb-1">Ticker</label>
-          <div className="flex gap-2">
-            <input
-              value={ticker}
-              onChange={(e) => setTicker(e.target.value)}
-              placeholder="AAPL"
-              className="w-full rounded border px-3 py-2 text-sm"
-            />
-            <button
-              onClick={checkTicker}
-              disabled={loading}
-              className="btn-primary"
-            >
-              {loading ? "Checking..." : "Check"}
-            </button>
-          </div>
+          <h2 className="text-lg font-semibold">Ticker compliance check</h2>
+          <p className="mt-1 text-sm text-gray-500">
+            Enter a stock ticker to review its current compliance status.
+          </p>
         </div>
 
+        <div className="flex flex-col gap-3 md:flex-row">
+          <input
+            value={ticker}
+            onChange={(e) => setTicker(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                checkTicker()
+              }
+            }}
+            placeholder="Enter ticker, for example AAPL"
+            className="w-full rounded border px-3 py-2 text-sm md:max-w-md"
+          />
+
+          <button
+            onClick={checkTicker}
+            disabled={loading || !ticker.trim()}
+            className="btn-primary disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {loading ? "Checking..." : "Check compliance"}
+          </button>
+        </div>
+
+        {error && (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+
         {result && (
-          <div className="rounded border p-4 space-y-3">
-            <div className="flex items-center justify-between">
+          <div className="rounded-lg border bg-gray-50 p-5">
+            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div>
-                <p className="text-sm text-gray-500">Ticker</p>
-                <p className="text-xl font-semibold">{result.ticker}</p>
+                <p className="text-sm text-gray-500">Compliance result</p>
+                <p className="mt-1 text-3xl font-semibold">{result.ticker}</p>
               </div>
+
               <StatusBadge status={result.status} />
             </div>
 
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
               <div>
-                <p className="text-gray-500">Score</p>
-                <p className="font-medium">
-                  {result.score !== null
-                    ? `${Math.round(result.score * 100)}%`
-                    : "-"}
+                <p className="text-sm text-gray-500">Score</p>
+                <p className="mt-1 text-lg font-semibold">{score}</p>
+              </div>
+
+              <div>
+                <p className="text-sm text-gray-500">Source</p>
+                <p className="mt-1 text-lg font-semibold">
+                  {result.source || "-"}
                 </p>
               </div>
 
               <div>
-                <p className="text-gray-500">Source</p>
-                <p className="font-medium">{result.source}</p>
-              </div>
-
-              <div className="col-span-2">
-                <p className="text-gray-500">Reason</p>
-                <p className="font-medium">{result.reason || "-"}</p>
+                <p className="text-sm text-gray-500">Status</p>
+                <p className="mt-1 text-lg font-semibold capitalize">
+                  {result.status || "-"}
+                </p>
               </div>
             </div>
-          </div>
-        )}
 
-        {error && (
-          <div className="rounded border border-red-300 bg-red-50 p-3 text-sm text-red-700">
-            {error}
+            <div className="mt-6 border-t pt-4">
+              <p className="text-sm text-gray-500">Reason</p>
+              <p className="mt-1 text-sm text-gray-700">
+                {result.reason || "No additional explanation provided."}
+              </p>
+            </div>
           </div>
         )}
       </div>
 
-      <PortfolioScanner />
+      <div>
+        <div className="mb-3">
+          <h2 className="text-lg font-semibold">Portfolio compliance scan</h2>
+          <p className="mt-1 text-sm text-gray-500">
+            Review multiple holdings together and identify positions that may
+            require attention.
+          </p>
+        </div>
+
+        <PortfolioScanner />
+      </div>
     </div>
   )
 }

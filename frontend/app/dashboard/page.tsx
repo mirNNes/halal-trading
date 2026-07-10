@@ -95,17 +95,29 @@ export default function DashboardPage() {
               Broker connected and compliance engine active.
             </p>
 
-            <div className="flex gap-6 mt-4 text-sm">
+            <div className="flex gap-6 mt-4 text-sm flex-wrap">
               <div>
                 <p className="text-emerald-100">Broker</p>
                 <p className="font-semibold">
-                  {activeBroker ? `${brokerName} ${brokerMode}` : "Not connected"}
+                  {activeBroker
+                    ? `${brokerName} ${brokerMode}`
+                    : "Not connected"}
                 </p>
               </div>
 
               <div>
                 <p className="text-emerald-100">Compliance</p>
                 <p className="font-semibold">Active</p>
+              </div>
+
+              <div>
+                <p className="text-emerald-100">Strategies</p>
+                <p className="font-semibold">{activeStrategies} Active</p>
+              </div>
+
+              <div>
+                <p className="text-emerald-100">Positions</p>
+                <p className="font-semibold">{openPositionsCount} Open</p>
               </div>
             </div>
           </div>
@@ -136,28 +148,30 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="card">
+        <div className="card border-t-4 border-emerald-500">
           <p className="text-sm text-gray-500">Portfolio Value</p>
           <p className="text-xl font-semibold mt-1">
             {accountInfo
               ? `$${Number(accountInfo.portfolio_value).toLocaleString()}`
-              : "No account data"}
+              : "Waiting for broker data"}
           </p>
         </div>
 
-        <div className="card">
+        <div className="card border-t-4 border-blue-500">
           <p className="text-sm text-gray-500">Cash</p>
           <p className="text-xl font-semibold mt-1">
-            {accountInfo ? `$${Number(accountInfo.cash).toLocaleString()}` : "No account data"}
+            {accountInfo
+              ? `$${Number(accountInfo.cash).toLocaleString()}`
+              : "Waiting for broker data"}
           </p>
         </div>
 
-        <div className="card">
+        <div className="card border-t-4 border-violet-500">
           <p className="text-sm text-gray-500">Open Positions</p>
           <p className="text-xl font-semibold mt-1">{openPositionsCount}</p>
         </div>
 
-        <div className="card">
+        <div className="card border-t-4 border-amber-500">
           <p className="text-sm text-gray-500">Active Strategies</p>
           <p className="text-xl font-semibold mt-1">{activeStrategies}</p>
         </div>
@@ -169,7 +183,9 @@ export default function DashboardPage() {
 
           <div className="mt-3 space-y-2">
             <p className="text-sm text-gray-500">
-              {activeBroker ? `${brokerName} ${brokerMode}` : "No broker connected"}
+              {activeBroker
+                ? `${brokerName} ${brokerMode}`
+                : "No broker connected"}
             </p>
 
             <StatusBadge
@@ -232,7 +248,10 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-semibold text-lg">Recent Orders</h2>
 
-          <Link href="/executions" className="text-sm text-blue-600 hover:underline">
+          <Link
+            href="/executions"
+            className="text-sm text-blue-600 hover:underline"
+          >
             View all
           </Link>
         </div>
